@@ -10,17 +10,15 @@ import (
 	"time"
 )
 
-var ch chan map[int64]int64 = make(chan map[int64]int64)
-var chpc chan []Point = make(chan []Point)
+
 
 func GetStr(sql string,startTime int64,endTime int64) string{
 	start := time.Now()
 	resultData := GetData(sql,startTime,endTime)
 	fmt.Println("getData time: ", time.Now().Sub(start))
-	//result := mergerLocalArray(resultData,endTime,startTime)
+
 	bytes, _ := json.Marshal(resultData)  
 	jsonStr := string(bytes)
-	//fmt.Println(fmt.Println(jsonStr))
 	return jsonStr
 }
 
@@ -41,17 +39,19 @@ func GetData(sql string,startTime int64,endTime int64)[]Point{
 			break
 		}
 	}
-	
-	for _,value := range dbAddress{
-		go Search(sql,value)
+	var ch chan map[int64]int64 = make(chan map[int64]int64)
+	for i=0;i<int64(len(dbAddress));i++{
+		value := dbAddress[i]
+		go Search(sql,value,ch)
 	}
+
 	
 	allData := map[int64]map[int64]int64{}
 	var j int64 = 0
 	for j = 0;j<i;j++{
 		allData[j] = <- ch
 	}
-	//fmt.Println(allData)
+	
 	return mergerMap(allData,startTime,endTime)
 }
 
@@ -83,10 +83,13 @@ func GetAllData(sql string,startTime int64,endTime int64)string{
 		}
 		
 	}
-
-	for _,value := range pcAddress{
-		go  callPc(sql,startTime,endTime,value)
+	var chpc chan []Point = make(chan []Point)
+	var k int64 = 0
+	for k=0;k<int64(len(pcAddress));k++{
+		value := pcAddress[k]
+		go  callPc(sql,startTime,endTime,value,chpc)
 	}
+
 	allData := map[int64][]Point{}
 
 	arrayData := GetData(sql,startTime,endTime)
@@ -104,7 +107,7 @@ func GetAllData(sql string,startTime int64,endTime int64)string{
 	return jsonStr
 }
 
-func callPc(sql string,startTime int64,endTime int64,pcAddress string){
+func callPc(sql string,startTime int64,endTime int64,pcAddress string,chpc chan []Point){
 	client := hprose.NewClient(pcAddress)
 	var call *Call
 	client.UseService(&call)

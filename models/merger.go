@@ -22,11 +22,18 @@ func mergerArray(allData map[int64][]Point,startTime int64,endTime int64)[]Point
 	}
 
 	var i int64 = 0
-	for _,value := range allData{
+	var k int64 = 0
+	for k=0;k<int64(len(allData));k++{
+		value := allData[k]
 		for i = 0;i<index;i++{
 			mergerData[i].Y += value[i].Y
 		}
 	}
+//	for _,value := range allData{
+//		for i = 0;i<index;i++{
+//			mergerData[i].Y += value[i].Y
+//		}
+//	}
 
 	interval := getInterval(endTime-startTime)
 	point := interval/(5*60)
@@ -92,14 +99,16 @@ func mergerMap(allData map[int64]map[int64]int64,startTime int64,endTime int64) 
 		resultData[j].X = x
 	
 	}
-
-	for _,value := range allData{
+	var i int64  = 0
+	for i=0;i<int64(len(allData));i++{
+		value := allData[i]
 		var k int64 = 0
 		for k=0;k<index;k++{
 			x := resultData[k].X
 			resultData[k].Y += value[x]
 		}
-	}	
+	}
+	
 	return resultData
 
 }

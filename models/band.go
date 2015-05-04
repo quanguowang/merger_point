@@ -12,7 +12,7 @@ import (
 
 
 
-func  Search(hql string,dbAddress string){
+func  Search(hql string,dbAddress string,ch chan map[int64]int64){
 	data := map[int64]int64{}
 	//start := time.Now()
 	db, err := sql.Open("mysql", dbAddress)
@@ -30,7 +30,7 @@ func  Search(hql string,dbAddress string){
 		var record_time time.Time
 		var value int64 
 		rows.Scan(&record_time,&value)
-		record_long := (record_time.Unix())*1000
+		record_long := (record_time.Unix()-(8*60*60))*1000
 		oldValue,ok := data[record_long]
 		if ok {
 			 data[record_long] = oldValue+value
