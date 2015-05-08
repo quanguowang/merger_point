@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "merger_point/routers"
-	"runtime"
+	//"runtime"
 	"github.com/hprose/hprose-go/hprose"
 	"os"
 	//"fmt"
@@ -13,8 +13,8 @@ import (
 func main() {
 
 	server := hprose.NewTcpServer("tcp4://0.0.0.0:4321/")
-	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
-	server.ThreadCount = runtime.NumCPU() * 2
+	//runtime.GOMAXPROCS(runtime.NumCPU() * 2)
+	//server.ThreadCount = runtime.NumCPU() * 2
 	server.AddFunction("band", band)
 	server.Start()
 	b := make([]byte, 1)
