@@ -7,28 +7,34 @@ import (
 	"log"
 	//"strconv"
 	"time"
-	//"fmt"
 )
 
 
 
-func  Search(hql string,dbAddress string,ch chan map[int64]int64){
-	data := map[int64]int64{}
+func  Search(hql string,dbAddress string,ch chan map[int64]float64,errors *bool){
+	defer func(){ // 必须要先声明defer，否则不能捕获到panic异常
+        if err:=recover();err!=nil{	
+			*errors = true	 
+            log.Println("SearchDBerr:",time.Now(), err)
+        }
+    }()
+	data := map[int64]float64{}
 	//start := time.Now()
 	db, err := sql.Open("mysql", dbAddress)
 	//end := time.Now()
 	//fmt.Println("open conn: ", end.Sub(start))
-	checkErr(err)
 	log.Println("sql:", hql)
 	rows, err := db.Query(hql)
 	//queryTime := time.Now()
 	//fmt.Println("query time:", queryTime.Sub(end))
-	checkErr(err)
-	
-	//data := map[int64]int64{}
+	if err != nil {
+		ch <- data
+		panic(err)
+	}
+
 	for rows.Next() {
 		var record_time time.Time
-		var value int64 
+		var value float64 
 		rows.Scan(&record_time,&value)
 		record_long := (record_time.Unix()-(8*60*60))*1000
 		oldValue,ok := data[record_long]
@@ -47,14 +53,9 @@ func  Search(hql string,dbAddress string,ch chan map[int64]int64){
 
 }
 
-
-
-
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
-
-
 
