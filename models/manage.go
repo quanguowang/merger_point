@@ -99,7 +99,7 @@ func callPc(sql string,startTime int64,endTime int64,pcAddress string,chpc chan 
 	defer func(){ 
         if err:=recover();err!=nil{
 			*errors = true	
-            log.Println("callPCerr:",time.Now(), err)
+            log.Println(pcAddress," callPCerr:",time.Now(), err)
 			chpc <- arrayData
         }
 

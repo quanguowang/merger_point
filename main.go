@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"github.com/hprose/hprose-go/hprose"
 	"os"
-	"fmt"
+	//"fmt"
 	//"strconv"
 	"merger_point/models"
 )
@@ -28,7 +28,6 @@ func band(sql string,startTime int64,endTime int64,golang bool,isService bool)st
 	var errors bool = false;
 	if(golang){		
 		result := models.GetStr(sql,startTime,endTime,&errors)
-		fmt.Println("main:getstr",errors)
 		if errors {
 			return "true"
 		}else{
@@ -36,7 +35,6 @@ func band(sql string,startTime int64,endTime int64,golang bool,isService bool)st
 		}
 	}else{		
 		result := models.GetAllData(sql,startTime,endTime,isService,&errors)
-		fmt.Println("main:getall",errors)
 		if errors {
 			return "true"
 		}else{
