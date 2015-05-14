@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/astaxie/beego"
-	"fmt"
+	//"fmt"
 	"github.com/hprose/hprose-go/hprose"
 	"log"
 	"strconv"
@@ -21,7 +21,8 @@ func GetStr(sql string,startTime int64,endTime int64,errors *bool)string{
 	return jsonStr
 }
 
-func GetData(sql string,startTime int64,endTime int64,errors *bool)[]Point{
+func GetData(sql string,startTime int64,endTime int64,errors *bool)[]float64{
+	
 	dbAddress := map[int64]string{}
 	var i int64 = 0
 	for  {
@@ -33,13 +34,14 @@ func GetData(sql string,startTime int64,endTime int64,errors *bool)[]Point{
 			break
 		}
 	}
-	var ch chan map[int64]float64 = make(chan map[int64]float64)
+	
+	var ch chan []float64 = make(chan []float64)
 	for i=0;i<int64(len(dbAddress));i++{
 		value := dbAddress[i]
-		go Search(sql,value,ch,errors)
+		go Search(sql,value,ch,errors,startTime,endTime)
 	}
-		
-	allData := map[int64]map[int64]float64{}
+	allData := map[int64][]float64{}
+	
 	var j int64 = 0
 	for j = 0;j<i;j++{
 		allData[j] = <- ch
@@ -61,7 +63,7 @@ func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *
 	for  {
 		pc := beego.AppConfig.String("pc_"+strconv.FormatInt(i,10))
 		if  "" != pc {
-			fmt.Println(pc)
+			//fmt.Println(pc)
 			pcAddress[i] = pc
 			i++		
 		}else{
@@ -69,7 +71,7 @@ func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *
 		}
 		
 	}
-	var chpc chan []Point = make(chan []Point)
+	var chpc chan []float64 = make(chan []float64)
 	var k int64 = 0
 
 	for k=0;k<int64(len(pcAddress));k++{
@@ -77,7 +79,7 @@ func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *
 		go  callPc(sql,startTime,endTime,value,chpc,isService,errors)
 	}
 
-	allData := map[int64][]Point{}
+	allData := map[int64][]float64{}
 
 	arrayData := GetData(sql,startTime,endTime,errors)
 
@@ -93,9 +95,9 @@ func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *
 	return jsonStr
 }
 
-func callPc(sql string,startTime int64,endTime int64,pcAddress string,chpc chan []Point,isService bool,errors *bool){
+func callPc(sql string,startTime int64,endTime int64,pcAddress string,chpc chan []float64,isService bool,errors *bool){
 	index := (endTime-startTime)/(5*60*1000)
-	arrayData := make([]Point,index)
+	arrayData := make([]float64,index)
 	defer func(){ 
         if err:=recover();err!=nil{
 			*errors = true	

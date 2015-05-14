@@ -11,14 +11,15 @@ import (
 
 
 
-func  Search(hql string,dbAddress string,ch chan map[int64]float64,errors *bool){
+func  Search(hql string,dbAddress string,ch chan []float64,errors *bool,startTime int64,endTime int64){
 	defer func(){ // 必须要先声明defer，否则不能捕获到panic异常
         if err:=recover();err!=nil{	
 			*errors = true	 
             log.Println("SearchDBerr:",time.Now(), err)
         }
     }()
-	data := map[int64]float64{}
+	indexs := (endTime-startTime)/(5*60*1000)
+	data := make([]float64, indexs)
 	//start := time.Now()
 	db, err := sql.Open("mysql", dbAddress)
 	//end := time.Now()
@@ -37,19 +38,14 @@ func  Search(hql string,dbAddress string,ch chan map[int64]float64,errors *bool)
 		var value float64 
 		rows.Scan(&record_time,&value)
 		record_long := (record_time.Unix()-(8*60*60))*1000
-		oldValue,ok := data[record_long]
-		if ok {
-			 data[record_long] = oldValue+value
-		}else{
-			data[record_long] = value
-		}
+		index := (record_long-startTime)/(5*60*1000)
+		data[index] = value
 		
 	}
 	db.Close()
 	//fmt.Println("all query:", time.Now().Sub(queryTime))
 	ch <- data
-	//return data
-
+	
 
 }
 
