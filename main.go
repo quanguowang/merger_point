@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "merger_point/routers"
+	//_ "merger_point/routers"
 	//"runtime"
 	"github.com/hprose/hprose-go/hprose"
 	"os"
@@ -18,7 +18,10 @@ func main() {
 	server.AddFunction("band", band)
 	server.Start()
 	b := make([]byte, 1)
-	os.Stdin.Read(b)
+	for {
+		os.Stdin.Read(b)
+	}
+	
 	server.Stop()
 	//beego.Run()
 
