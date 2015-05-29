@@ -55,7 +55,11 @@ type Call struct {
 	
 }
 
-
+type Result struct {
+    Data    []Point
+    Maxy    float64
+   
+}
 
 func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *bool)string{	
 	pcAddress := map[int64]string{}
@@ -88,9 +92,10 @@ func GetAllData(sql string,startTime int64,endTime int64,isService bool,errors *
 		allData[j] = <- chpc
 	}
 	allData[i] = arrayData
-	data := mergerArray(allData,startTime,endTime,isService)
+	data,maxY := mergerArray(allData,startTime,endTime,isService)
 	
-	bytes, _ := json.Marshal(data)  
+	result := Result{data,maxY}
+	bytes, _ := json.Marshal(result)  
 	jsonStr := string(bytes)
 	return jsonStr
 }

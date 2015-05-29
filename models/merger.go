@@ -3,6 +3,7 @@ package models
 import (
 	//"encoding/json"
 	//"fmt"
+	"sort"
 )
 
 type Point struct {
@@ -11,7 +12,7 @@ type Point struct {
    
 }
 
-func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isService bool)[]Point{
+func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isService bool)([]Point,float64){
 	index := (endTime-startTime)/(5*60*1000)	
 	mergerData := make([]Point,index)
 	
@@ -30,11 +31,19 @@ func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isSer
 			
 		}
 	}
-//	for _,value := range allData{
-//		for i = 0;i<index;i++{
-//			mergerData[i].Y += value[i].Y
-//		}
-//	}
+	
+	//如果是服务带宽，获取95线
+	var maxY float64 = 0
+	if isService {
+		arrMaxY :=  make([]float64,index);
+		for i=0;i<index;i++{
+			arrMaxY[i] = mergerData[i].Y
+		}
+		//arrMaxY = sort(arrMaxY)
+		sort.Float64s(arrMaxY)
+		indexMaxy := float64(len(arrMaxY))*0.95
+		maxY = arrMaxY[int64(indexMaxy)-1]/37.5
+	}
 
 	interval := getInterval(endTime-startTime)
 	point := interval/(5*60)
@@ -57,7 +66,7 @@ func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isSer
 				}
 				result[i].Y = maxValue/coefficient
 			}
-			return result
+			return result,maxY
 		}else{
 			for i = 0;i<index/point;i++ {
 				var value float64 = 0
@@ -68,7 +77,7 @@ func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isSer
 				}
 				result[i].Y = value/coefficient
 			}
-			return result
+			return result,maxY
 		}
 			
 	}else{
@@ -76,7 +85,7 @@ func mergerArray(allData map[int64][]float64,startTime int64,endTime int64,isSer
 			mergerData[i].Y = (mergerData[i].Y)/coefficient
 			
 		}
-		return mergerData
+		return mergerData,maxY
 		
 	}
 	
@@ -88,12 +97,7 @@ func mergerMap(allData map[int64][]float64,startTime int64,endTime int64) []floa
 	index := (endTime-startTime)/(5*60*1000)
 
 	resultData := make([]float64, index)
-//	var j int64 = 0
-//	for j = 0; j < index; j++ {
-//		x := startTime+(5*60*1000)*int64(j)
-//		resultData[j].X = x
-	
-//	}
+
 	var i int64  = 0
 	for i=0;i<int64(len(allData));i++{
 		value := allData[i]
@@ -115,6 +119,17 @@ func getInterval(time int64)int64{
 	}
 	return 5 * 60 * int64(fl)
 }
+
+//func sort(array []float64) []float64 {
+//	for i := 0; i < len(array); i++ {
+//	 for j := 0; j < len(array)-i-1; j++ {
+//	  if array[j] > array[j+1] {
+//	   array[j], array[j+1] = array[j+1], array[j]
+//	  }
+//	 }
+//	}
+//	return array
+//}
 
 //func mergerLocalArray(allData []Point,startTime int64,endTime int64)[]Point{
 //	index := (endTime-startTime)/(5*60*1000)
